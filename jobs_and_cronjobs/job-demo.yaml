@@ -1,0 +1,18 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: job-demo
+  namespace: ns-demo
+spec:
+  template:
+    spec:
+      containers:
+      - name: myjob
+        image: strrzj/admin-box:v1.2
+        imagePullPolicy: IfNotPresent
+        command: ["/bin/sh", "-c", "sleep 20"]
+      restartPolicy: Never
+  completions: 2
+  ttlSecondsAfterFinished: 3600
+  backoffLimit: 3
+  activeDeadlineSeconds: 300

@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: mynginx-pod
+  name: mynginx-service2
+  namespace: ns-mynginx
+spec:
+  ports:
+  - name: 80-80
+    port: 80
+    protocol: TCP
+    targetPort: 80
+  - name: 81-81
+    port: 81
+    protocol: TCP
+    targetPort: 81
+  selector:
+    app: mynginx-pod
+  type: NodePort
+  externalIPs: 
+  - 192.168.198.150  
+status:
+  loadBalancer: {}

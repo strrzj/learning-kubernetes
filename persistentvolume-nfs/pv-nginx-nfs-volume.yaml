@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Namespace
+metadata: 
+  name: ns-mynginx
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata: 
+  name: pv-nginx-nfs
+  namespace: ns-mynginx
+spec:
+  capacity: 
+    storage: 5Gi
+  volumeMode: Filesystem
+  accessModes:
+  - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  mountOptions:
+  - hard
+  - nfsvers=4.1
+  nfs:
+    server: ubuntu22-server01         #nfs服务器端IP
+    path: /data/conf.d   #nfs服务器端绑定数据目录

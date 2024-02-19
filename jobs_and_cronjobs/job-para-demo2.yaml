@@ -1,0 +1,20 @@
+apiVersion: batch/v1
+kind: Job
+metadata: 
+  name: job-para-demo2
+  namespace: ns-demo
+spec:
+  template: 
+    spec: 
+      containers: 
+      - name: myjob
+        image: strrzj/admin-box:v1.2
+        imagePullPolicy: IfNotPresent
+        command: ["/bin/sh", "-c", "sleep 10"]
+      restartPolicy: Never  # pod重启策略不能是Always，只能是Never或者OnFailure
+  completions: 5   # 期望运行5次，如果设置parallelism并行度，会按照批次运行多个pod，并行度为2，则运行三批
+  completionMode: Indexed       # 如果有多个pod并行运行时设置了Indexed，pod名称会有索引，默认为NonIndexed
+  parallelism: 2  # 设置作业并行度为2，默认为1
+  ttlSecondAfterFinished: 3600       # 结束作业最多时长3600秒(1小时)，超时作业将被删除 
+  backoffLimit: 3      # 错误重试3次
+  activeDeadlineSeconds: 300    # 最大处于活动状态时长300秒(5分钟)

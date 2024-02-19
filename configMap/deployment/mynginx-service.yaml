@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: mynginx-deployment
+  name: mynginx-service
+  namespace: ns-mynginx
+spec:
+  ports:
+  - name: 80-80
+    port: 80
+    protocol: TCP
+    targetPort: 80
+  - name: 81-81
+    port: 81
+    protocol: TCP
+    targetPort: 81
+  selector:
+    app: mynginx-deployment
+  type: NodePort
+  externalIPs: 
+  - 192.168.198.150  
+status:
+  loadBalancer: {}

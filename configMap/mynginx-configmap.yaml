@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mynginx-configmap
+  namespace: ns-mynginx
+data:
+  nginx.conf: |-
+      upstream tomcat-backend {
+        #server demotomcat-db596d4c8-5z6cc:8080;
+        #server demotomcat-db596d4c8-pdzdk:8080;
+        server 10.244.1.6:8080 weight=1;
+        server 10.244.2.6:8080 weight=1;
+      }
+
+      server {
+        listen 81;
+        server_name tomcat-backend;
+
+        location / {
+          proxy_pass http://tomcat-backend;
+        }
+      }

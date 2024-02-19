@@ -1,0 +1,59 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ns-mynginx
+---    
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: demonginx-deployment
+  name: demonginx-volume
+  namespace: ns-mynginx
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: demonginx-deployment
+  template:
+    metadata:
+      labels:
+        app: demonginx-deployment
+    spec:
+      containers:
+      - name: ubuntu22-server-mynginx
+        image: strrzj/ubuntu22-server-mynginx:latest
+        volumeMounts:
+        - name: nginx-config
+          mountPath: /etc/nginx/conf.d
+          readOnly: true
+      volumes:
+      - name: nginx-config
+        hostPath:
+          path: /root/config-yaml/demonginx/conf.d
+          type: DirectoryOrCreate  
+---          
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: demonginx-deployment
+  name: demonginx-volume
+  namespace: ns-mynginx
+spec:
+  ports:
+  - name: 80-80
+    port: 80
+    protocol: TCP
+    targetPort: 80
+  - name: 81-81
+    port: 81
+    protocol: TCP
+    targetPort: 81
+  externalIPs:
+  - 192.168.198.150    
+  selector:
+    app: demonginx-deployment
+  type: NodePort
+status:
+  loadBalancer: {}

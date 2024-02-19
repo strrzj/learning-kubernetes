@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-nginx-pvc-nfs-dynamic
+  labels:
+    app: pvc-nfs-dynamic-pod
+  namespace: ns-mynginx 
+spec:
+  containers:
+  - name: ubuntu22-server-mynginx
+    image: strrzj/my-nginx:v1.1
+    imagePullPolicy: IfNotPresent
+    resources:
+      requests:
+        memory: "64Mi"
+        cpu: "200m"
+      limits:
+        memory: "64Mi"
+        cpu: "200m"
+    volumeMounts:
+    - name: nginx-data
+      mountPath: /etc/nginx/conf.d
+      readOnly: true
+  volumes:
+  - name: nginx-data
+    persistentVolumeClaim:
+      claimName: pvc-nfs-dynamic
+  restartPolicy: OnFailure

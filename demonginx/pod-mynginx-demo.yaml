@@ -1,0 +1,60 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ns-mynginx
+---    
+apiVersion: v1
+kind: Pod
+metadata:
+  name: demonginx-volume
+  labels:
+    app: demonginx-pod
+  namespace: ns-mynginx
+spec:
+  nodeName: ubuntu22-server03
+  containers:
+  - name: ubuntu22-server-mynginx
+    image: strrzj/ubuntu22-server-mynginx:latest
+    imagePullPolicy: IfNotPresent
+    resources:
+      requests:
+        memory: "64Mi"
+        cpu: "200m"
+      limits:
+        memory: "64Mi"
+        cpu: "200m"
+    volumeMounts:
+    - name: nginx-config
+      mountPath: /etc/nginx/conf.d/nginx.conf
+      readOnly: true
+  volumes:
+  - name: nginx-config
+    hostPath:
+      path: /root/config-yaml/demonginx/conf.d/nginx.conf
+      type: File  
+  restartPolicy: OnFailure
+---          
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: demonginx-pod
+  name: demonginx-volume2
+  namespace: ns-mynginx
+spec:
+  ports:
+  - name: 80-80
+    port: 80
+    protocol: TCP
+    targetPort: 80
+  - name: 81-81
+    port: 81
+    protocol: TCP
+    targetPort: 81
+  externalIPs:
+  - 192.168.198.150    
+  selector:
+    app: demonginx-pod
+  type: NodePort
+status:
+  loadBalancer: {}

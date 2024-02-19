@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: mynginx-deployment
+  name: mynginx-deployment
+  namespace: ns-mynginx  
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: mynginx-deployment
+  template:
+    metadata:
+      labels:
+        app: mynginx-deployment
+    spec:
+      containers:
+      - name: ubuntu22-server-mynginx
+        image: strrzj/ubuntu22-server-mynginx:latest
+        volumeMounts:
+        - name: nginx-config
+          mountPath: /etc/nginx/conf.d
+      volumes:
+      - name: nginx-config
+        configMap:
+          name: mynginx-configmap

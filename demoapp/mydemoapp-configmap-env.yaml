@@ -1,0 +1,48 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ns-demo
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cm-mydemoapp
+  namespace: ns-demo
+data:
+  mydemoapp.port: "8080"
+  mydemoapp.host: 0.0.0.0
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-mydemoapp-cm-env
+  labels:
+    app: mydemoapp
+  namespace: ns-demo
+spec:
+  nodeName: ubuntu22-server02
+  restartPolicy: OnFailure
+  containers:
+  - name: demoapp
+    image: strrzj/mydemoapp:v1.0
+    imagePullPolicy: IfNotPresent
+    resources:
+      requests:
+        memory: "64Mi"
+        cpu: "200m"
+      limits:
+        memory: "64Mi"
+        cpu: "200m"
+    env:
+    - name: PORT
+      valueFrom:
+        configMapKeyRef:
+          name: cm-mydemoapp
+          key: mydemoapp.port
+          optional: false
+    - name: HOST
+      valueFrom:
+        configMapKeyRef:
+          name: cm-mydemoapp
+          key: mydemoapp.host
+          optional: true

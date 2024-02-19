@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Namespace
+metadata: 
+  name: ns-myredis 
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-nfs-dynamic-redis
+  namespace: ns-myredis
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 8Gi
+  storageClassName: nfs-csi
