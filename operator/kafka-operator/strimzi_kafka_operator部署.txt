@@ -1,0 +1,78 @@
+Custom Resources on Kubernetes:
+https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/
+
+quick start kafka operator crd on kubernetes: 通过自定义的kafka operator控制器创建资源类型并快速在kubernetes集群上部署kafka集群：
+
+1、通过operatorhub.io仓库搜索kafka相关的operator，选择Strimzi，通过website链接或者https://strimzi.io/ 访问strimzi kafka quick start官方文档步骤，
+   也可以直接访问github/strimzi或者cncf.io的strimzi projects  
+   Strimzi kafka operator目前最新版本是0.39.0，对应的kafka版本是3.6.1，可以支持的kubernetes集群版本是1.21+
+https://operatorhub.io/operator/strimzi-kafka-operator
+https://strimzi.io/quickstarts/
+https://github.com/strimzi/strimzi-kafka-operator
+https://www.cncf.io/projects/strimzi/
+2、选择Kubernetes Kind部署，先将kafka crd部署到kubernetes集群中
+#创建kafka命名空间
+kubectl create namespace kafka
+#创建kafka crds(Custom Resource Definitions)
+#可以直接使用官方文件链接创建kafka crds
+kubectl create -f 'https://strimzi.io/install/latest?namespace=kafka' -n kafka
+#也可以将 https://strimzi.io/install/latest?namespace=kafka 链接保存为本地yaml文件来创建
+kubectl apply -f strimzi-kafka-crds.yaml -n kafka
+#查看crds
+kubectl get crds
+#查看pod
+kubectl get pod -n kafka -o wide
+3、在kafka命名空间下创建非持久化的zookeeper集群和kafka集群
+kubectl apply -f https://raw.githubusercontent.com/strimzi/strimzi-kafka-operator/0.39.0/examples/kafka/kafka-ephemeral.yaml -n kafka
+或者将raw文件保存为本地yaml文件执行创建
+kubectl apply -f kafka-ephemeral.yaml -n kafka
+#等待3个zookeeper的pod和3个kafka的pod创建完毕
+kubectl get pods -n kafka -o wide -w
+NAME
+my-cluster-kafka-0
+my-cluster-kafka-1
+my-cluster-kafka-2
+my-cluster-zookeeper-0
+my-cluster-zookeeper-1
+my-cluster-zookeeper-2
+#查看zookeeper集群clusterip入口服务 和 kafka集群入口clusterip服务
+kubectl get services -n kafka -o wide
+my-cluster-zookeeper-client
+my-cluster-zookeeper-nodes
+my-cluster-kafka-bootstrap
+my-cluster-kafka-brokers
+4、测试集群生产者和消费者
+# run a simple producer to send messages to a Kafka topic (the topic is automatically created): 创建控制台生产者
+kubectl -n kafka run kafka-producer -ti --image=quay.io/strimzi/kafka:0.39.0-kafka-3.6.1 --rm=true --restart=Never -- bin/kafka-console-producer.sh --bootstrap-server my-cluster-kafka-bootstrap:9092 --topic my-auto-topic
+# 此时可以在控制台提示符中输入消息，消息会被保存到自动创建的topic中
+If you don't see a command prompt, try pressing enter.
+
+>
+#And to receive them in a different terminal, run: 创建控制台消费者
+kubectl -n kafka run kafka-consumer -ti --image=quay.io/strimzi/kafka:0.39.0-kafka-3.6.1 --rm=true --restart=Never -- bin/kafka-console-consumer.sh --bootstrap-server my-cluster-kafka-bootstrap:9092 --topic my-auto-topic --from-beginning
+If you don't see a command prompt, try pressing enter. 如果没有看到消息可以按回车键
+
+# 退出生产者和消费者，查看kafkatopics中是否有topic可以看到
+kubectl get kafkatopics -n kafka
+my-auto-topic
+
+kubectl get kafkatopics my-auto-topic -o yaml -n kafka
+apiVersion: kafka.strmizi.io/v1beta2
+kind: KafkaTopic
+metadata: 
+  name: my-auto-topic
+  labels:
+    strimzi.io/cluster: my-cluster
+  namespace: kafka
+spec:
+  partitions: 1
+  replicas: 3
+  topicName: my-auto-topic 
+  
+# partitions表示分区数可以多设置几个，只要不超过节点数量可以提升kafka性能
+# replicas表示复制因子，提供了容错性，如果复制因子小于等于设置的因子数量的节点出现故障，不会导致消息丢失
+
+
+Enjoy your Apache Kafka cluster, running on Kind!
+
+	 

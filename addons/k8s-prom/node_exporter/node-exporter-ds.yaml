@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: prometheus-node-exporter
+  namespace: prom
+  labels:
+    app: prometheus
+    component: node-exporter
+spec:
+  selector:
+    matchLabels:
+      app: prometheus
+      component: node-exporter
+  template:
+    metadata:
+      name: prometheus-node-exporter
+      labels:
+        app: prometheus
+        component: node-exporter
+    spec:
+      #tolerations:
+      #- effect: NoSchedule
+      #  key: node-role.kubernetes.io/master
+      #nodeSelector:                    # 节点选择器
+      #  node-role.kubernetes.io/control-plane: ""
+      tolerations:               # 污点容忍 可以在master节点上部署一个pod
+      - key: "node-role.kubernetes.io/control-plane"
+        operator: "Exists"
+        effect: "NoSchedule"
+      containers:
+      - image: prom/node-exporter:v1.5.0
+        name: prometheus-node-exporter
+        ports:
+        - name: prom-node-exp
+          containerPort: 9100
+          hostPort: 9100
+      hostNetwork: true
+      hostPID: true

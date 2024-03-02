@@ -2,8 +2,13 @@ apiVersion: v1
 kind: Pod
 metadata:
   name: pod-demo
+  labels:
+    app: mydemoapp
+    version: v1
   namespace: default
 spec:
+  nodeName: ubuntu22-server03
+
   containers:
   - name: demo
     image: strrzj/mydemoapp:v1.0

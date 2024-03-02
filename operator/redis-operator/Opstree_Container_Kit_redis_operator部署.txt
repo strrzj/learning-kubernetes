@@ -1,0 +1,104 @@
+作业：
+     通过redis自定义的operator控制器部署redis资源类型，并在kubernetes上部署redis cluster模式和redis replication模式
+     参考网站：
+	 https://operatorhub.io/operator/redis-operator
+	 https://github.com/OT-CONTAINER-KIT/redis-operator
+	 https://ot-redis-operator.netlify.app/docs/
+	 https://ot-container-kit.github.io/redis-operator/guide/#supported-features
+	 https://artifacthub.io/packages/olm/community-operators/redis-operator
+	 
+	 https://github.com/OT-CONTAINER-KIT/redis-operator/blob/master/example
+	 https://github.com/OT-CONTAINER-KIT/redis-operator/blob/master/config/crd/bases
+	 
+
+
+	 非helm部署：
+	 1、安装redis operator资源控制器
+	 https://ot-container-kit.github.io/redis-operator/guide/installation.html
+	 If you are beginner to Kubernetes and don't want to go inside the complexities of helm, in that case, you can use kubectl to install the operator
+	 $ kubectl apply -f https://raw.githubusercontent.com/OT-CONTAINER-KIT/redis-operator/master/config/crd/bases/redis.redis.opstreelabs.in_redis.yaml
+	 $ kubectl apply -f https://raw.githubusercontent.com/OT-CONTAINER-KIT/redis-operator/master/config/crd/bases/redis.redis.opstreelabs.in_redisclusters.yaml
+	 $ kubectl apply -f https://raw.githubusercontent.com/OT-CONTAINER-KIT/redis-operator/master/config/manager/manager.yaml
+	 $ kubectl apply -f https://raw.githubusercontent.com/OT-CONTAINER-KIT/redis-operator/master/config/rbac/serviceaccount.yaml
+	 $ kubectl apply -f https://raw.githubusercontent.com/OT-CONTAINER-KIT/redis-operator/master/config/rbac/role.yaml
+	 $ kubectl apply -f https://raw.githubusercontent.com/OT-CONTAINER-KIT/redis-operator/master/config/rbac/role_binding.yaml
+	 
+	 https://ot-redis-operator.netlify.app/docs/installation/installation/
+	 YAML installation is not a recommended way for installation, this can only be used for development practices only.
+	 git clone https://github.com/OT-CONTAINER-KIT/redis-operator.git
+ 	 cd redis-operator/scripts
+	 chmod u+x install-operator.sh
+	 $ ./install-operator.sh
+	 customresourcedefinition.apiextensions.k8s.io/redis.redis.redis.opstreelabs.in created
+	 customresourcedefinition.apiextensions.k8s.io/redisclusters.redis.redis.opstreelabs.in created
+	 namespace/ot-operators created
+	 deployment.apps/redis-operator created
+	 serviceaccount/redis-operator created
+	 clusterrole.rbac.authorization.k8s.io/redis-operator created
+	 clusterrolebinding.rbac.authorization.k8s.io/redis-operator created
+
+	 $ kubectl get crds
+	 $ kubectl get pods -n ot-operators
+	 
+	 2、部署redis cluster 或者 redis replication
+	 
+	 # redis cluster crd
+	 $ kubectl apply -f https://raw.githubusercontent.com/OT-CONTAINER-KIT/redis-operator/master/config/crd/bases/redis.redis.opstreelabs.in_redisclusters.yaml -n ot-operators
+	 # redis cluster app
+	 $ kubectl apply -f https://raw.githubusercontent.com/OT-CONTAINER-KIT/redis-operator/master/example/v1beta1/redis-cluster.yaml -n ot-operators
+	 或者
+	 $ cd redis-operator-master\example\v1beta1\external_service
+	 $ kubectl apply -f clusterd.yaml -n ot-operators
+	 $ kubectl apply -f cluster-svc.yaml -n ot-operators
+	 
+	 # redis replication crd
+	 $ kubectl apply -f https://raw.githubusercontent.com/OT-CONTAINER-KIT/redis-operator/master/config/crd/bases/redis.redis.opstreelabs.in_redisreplications.yaml -n ot-operators
+	 # redis replication app
+	 $ kubectl apply -f https://raw.githubusercontent.com/OT-CONTAINER-KIT/redis-operator/master/example/v1beta1/redis-replication.yaml -n ot-operators
+	 或者
+	 $ cd redis-operator-master\example\v1beta1\external_service
+	 $ kubectl apply -f replication.yaml -n ot-operators
+	 $ kubectl apply -f replication-svc.yaml -n ot-operators
+	 
+	 helm部署：
+	 curl -LO https://get.helm.sh/helm-v3.14.0-linux-amd64.tar.gz
+     tar xf helm-v3.14.0-linux-amd64.tar.gz
+     cd linux-amd64/helm /usr/local/bin/
+	 helm --help
+	 1、安装部署redis operator资源控制器   https://ot-redis-operator.netlify.app/docs/installation/installation/
+	 # Create namespace t-operators
+	 $ kubectl create namespace ot-operators
+	 # Add the helm chart
+	 $ helm repo add ot-helm https://ot-container-kit.github.io/helm-charts/
+	 # check the ot-helm repository URL
+	 $ helm repo list
+	 # download redis-operator helm chart
+	 $ curl -LO https://github.com/OT-CONTAINER-KIT/helm-charts/releases/download/redis-operator-0.15.9/redis-operator-0.15.9.tgz
+	 $ tar xf redis-operator-0.15.9.tgz
+	 $ cd redis-operator
+	 # Deploy the redis-operator
+     $ helm install redis-operator ot-helm/redis-operator --namespace ot-operators
+	 或者
+	 $ helm upgrade redis-operator ot-helm/redis-operator --install --create-namespace --namespace ot-operators
+	
+	 # After deployment, verify the installation of operator
+	 $ helm test redis-operator --namespace ot-operators
+	 $ kubectl get pods -n ot-operators
+	 
+	 2、部署redis cluster   https://ot-redis-operator.netlify.app/docs/getting-started/cluster/
+	 # Create redis cluster setup
+	 $ helm install redis-cluster ot-helm/redis-cluster --set redisCluster.clusterSize=3 --namespace ot-operators
+	 或者
+	 $ helm upgrade redis-cluster ot-helm/redis-cluster \
+	  --set redisCluster.clusterSize=3 --install \ 
+	  --namespace ot-operators
+	 # Verify the cluster by checking the pod status of leader and follower pods 
+	 $ kubectl get pods -n ot-operators
+	  
+     3、部署redis replication  https://ot-redis-operator.netlify.app/docs/getting-started/replication/
+	 # Create redis replication setup
+	 $ helm install redis-replication ot-helm/redis-replication --set redisreplication.clusterSize=3 --namespace ot-operators
+	 或者
+	 $ helm upgrade redis-replication ot-helm/replication --install --namespace ot-operators
+	 # Verify the replication-cluster by checking the pod status of pods
+	 $ kubectl get pods -n ot-operators

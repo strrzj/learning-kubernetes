@@ -7,7 +7,7 @@ metadata:
     app: prometheus
     component: node-exporter
 spec:
-  selector:
+  selector:                      # 标签选择器
     matchLabels:
       app: prometheus
       component: node-exporter
@@ -18,6 +18,12 @@ spec:
         app: prometheus
         component: node-exporter
     spec:
+      #nodeSelector:                    # 节点选择器 只在master节点上调度
+      #  node-role.kubernetes.io/control-plane: ""
+      tolerations:               # 污点容忍 可以在master节点上部署一个pod
+      - key: "node-role.kubernetes.io/control-plane"
+        operator: "Exists"
+        effect: "NoSchedule"
       containers:
       - image: prom/node-exporter:v1.5.0
         name: prometheus-node-exporter

@@ -13,6 +13,7 @@ spec:
     command: ["/bin/sh","-c"]
     args: ["/sbin/iptables -t nat -A PREROUTING -p tcp --dport 8080 -j REDIRECT --to-port 80 && /usr/bin/python3 /usr/local/bin/demo.py"]
     securityContext:
+      privileged: true
       capabilities:
         add: ['NET_ADMIN']
-        #drop: ['CHOWN']
+        drop: ['CHOWN']

@@ -64,6 +64,14 @@ spec:
       containers:
       - name: mysql
         image: mysql:5.7
+        imagePullPolicy: IfNotPresent
+        resources: 
+          requests:
+            memory: "250Mi"
+            cpu: "50m"
+          limits: 
+            memory: "300Mi"
+            cpu: "100m"
         env:
         - name: LANG
           value: "C.UTF-8"
@@ -93,6 +101,14 @@ spec:
           timeoutSeconds: 1
       - name: xtrabackup
         image: strrzj/xtrabackup:v1.0
+        imagePullPolicy: IfNotPresent
+        resources:
+          requests:
+            memory: "250Mi"
+            cpu: "50m"
+          limits:  
+            memory: "300Mi"
+            cpu: "100m"
         ports:
         - name: xtrabackup
           containerPort: 3307

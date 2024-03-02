@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: deploy-mydemoapp
+    version: v1
+  name: deploy-mydemoapp
+  namespace: ns-dev
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: deploy-mydemoapp
+  template:
+    metadata:
+      labels:
+        app: deploy-mydemoapp
+        version: v1  
+    spec:
+      containers:
+      - image: strrzj/mydemoapp:v1.0
+        name: mydemoapp

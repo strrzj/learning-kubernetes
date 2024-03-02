@@ -1,0 +1,68 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ns-mytomcat
+---    
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: deploy-tomcat
+    version: v2  
+  name: pod-deploy-tomcat-v2
+  namespace: ns-mytomcat
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: deploy-tomcat
+      version: v2
+  template:
+    metadata:
+      labels:
+        app: deploy-tomcat
+        version: v2
+    spec:
+      restartPolicy: Always
+      containers:
+      - name: mytomcat
+        #image: strrzj/my-tomcat:v1.1
+        image: strrzj/ubuntu22-server-mytomcat
+        imagePullPolicy: IfNotPresent
+        resources:
+          limits:
+            cpu: 100m
+            memory: 32Mi
+          requests:
+            cpu: 100m
+            memory: 32Mi
+        #readinessProbe: 
+        #  httpGet:
+        #    path: '/'
+        #    port: 8080
+        #    scheme: HTTP
+        #  initialDelaySeconds: 5
+        #  timeoutSeconds: 5
+        #  periodSeconds: 5
+        #  failureThreshold: 3
+        securityContext:
+          capabilities:
+            add:
+            - NET_ADMIN
+            - SYS_TIME
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: svc-deploy-tomcat-v2
+  namespace: ns-mytomcat
+spec:
+  ports:
+  - name: 8080-8080
+    port: 8080
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: deploy-tomcat
+    version: v2
+  type: LoadBalancer

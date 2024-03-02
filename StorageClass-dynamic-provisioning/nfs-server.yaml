@@ -35,11 +35,13 @@ spec:
       labels:
         app: nfs-server
     spec:
+      nodeName: ubuntu22-server03
       nodeSelector:
         "kubernetes.io/os": linux
       containers:
         - name: nfs-server
           image: itsthenetwork/nfs-server-alpine:latest
+          imagePullPolicy: IfNotPresent  
           env:
             - name: SHARED_DIRECTORY
               value: "/exports"

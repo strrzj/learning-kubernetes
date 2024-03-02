@@ -1,0 +1,46 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ns-mytomcat
+---    
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: demotomcat
+  name: demotomcat
+  namespace: ns-mytomcat
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: demotomcat
+  template:
+    metadata:
+      labels:
+        app: demotomcat
+    spec:
+      containers:
+      - image: strrzj/ubuntu22-server-mytomcat
+        name: container-mytomcat
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: demotomcat
+  name: demotomcat
+  namespace: ns-mytomcat
+spec:
+  ports:
+  - name: 8080-8080
+    port: 8080
+    protocol: TCP
+    targetPort: 8080
+  externalIPs: 
+  - 192.168.198.150  
+  selector:
+    app: demotomcat
+  type: NodePort
+status:
+  loadBalancer: {}
